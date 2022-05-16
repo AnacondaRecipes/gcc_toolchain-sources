@@ -1,0 +1,26 @@
+From 9534a7a09d5919369e16e4f7b69d2d200c8ee3dd Mon Sep 17 00:00:00 2001
+From: Petr Machata <pmachata@redhat.com>
+Date: Thu, 13 Feb 2014 16:02:50 +0100
+Subject: Initialize struct process.e_machine and .e_class for secondary
+ threads
+
+
+diff --git a/proc.c b/proc.c
+index 6f4f64e..17bb3cd 100644
+--- a/proc.c
++++ b/proc.c
+@@ -224,9 +224,11 @@ process_init(struct process *proc, const char *filename, pid_t pid)
+ 		goto fail;
+ 	}
+ 
+-	if (proc->leader != proc)
+-		return 0;
+-	if (process_init_main(proc) < 0) {
++	if (proc->leader != proc) {
++		proc->e_machine = proc->leader->e_machine;
++		proc->e_class = proc->leader->e_class;
++		get_arch_dep(proc);
++	} else if (process_init_main(proc) < 0) {
+ 		process_bare_destroy(proc, 0);
+ 		goto fail;
+ 	}
